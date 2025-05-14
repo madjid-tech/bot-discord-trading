@@ -62,8 +62,6 @@ class TradingBot(discord.Client):
 
 # Initialisation du bot avec les intents
 intents = discord.Intents.default()
-intents.guilds = True
-intents.messages = True
 bot = TradingBot(intents=intents)
 
 # Lancement du bot
