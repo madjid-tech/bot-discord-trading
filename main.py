@@ -45,7 +45,7 @@ class TradingBot(discord.Client):
         tickers = [
             'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA', 
             'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
-            'EDF.PA', 'L'Oreal.PA', 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
+            'EDF.PA', "L'Oreal.PA", 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
             'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
             'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
             'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
