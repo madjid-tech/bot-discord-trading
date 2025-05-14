@@ -1,0 +1,7 @@
+type: cron
+  name: daily-trading-bot
+  schedule: "0 15 * * *"  # 17h Paris (15h UTC)
+  command: "python main.py"
+  envVars:
+key: PYTHON_VERSION
+    value: 3.10
