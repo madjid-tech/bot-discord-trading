@@ -56,7 +56,18 @@ class TradingBot(discord.Client):
         canal = self.get_channel(CHANNEL_ID)
 
         # Liste des symboles à analyser
-        tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
+       tickers = [
+    'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA',  # Actions en France
+    'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',     # Entreprises du CAC 40
+    'EDF.PA', 'L'Oreal.PA', 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
+    'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
+    'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
+    'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
+    # Actions internationales
+    'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
+    'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
+]
+
         messages = [analyser(ticker) for ticker in tickers]
         
         # Envoi du message d'analyse sur le canal
