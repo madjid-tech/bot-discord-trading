@@ -43,8 +43,11 @@ class TradingBot(discord.Client):
         self.bg_task = self.loop.create_task(self.envoi_quotidien())
 
     async def envoi_quotidien(self):
-        await self.wait_until_ready()
-        canal = self.get_channel(CHANNEL_ID)
+        await self.wait_until_ready()canal = self.get_channel(CHANNEL_ID)
+if canal is None:
+    print("❌ Le canal est introuvable. Vérifie que le bot est sur le bon serveur et a accès à ce canal.")
+    return
+
         
         while not self.is_closed():
             now = datetime.now()
