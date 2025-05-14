@@ -21,7 +21,7 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        df = yf.download(symbole, period='1mo', interval='1d')
+        df = yf.download(symbole, period='3mo', interval='6mo')
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
