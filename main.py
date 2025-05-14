@@ -21,12 +21,23 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        # Télécharge les données sur 3 mois, avec un intervalle de 6 mois.
+        # Télécharge les données sur 3 mois, avec un intervalle de 1 jour
         df = yf.download(symbole, period='3mo', interval='1d')
+        
+        # Si les données sont insuffisantes, on renvoie une erreur
+        if df.shape[0] < 20:
+            return f"{symbole}: Pas assez de données pour une analyse fiable."
+        
+        df = df.dropna()  # Supprimer les valeurs manquantes
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
+
         dernier = df.iloc[-1]
+
+        # Vérifier que les valeurs sont valides avant de faire les calculs
+        if np.isnan(dernier['RSI']) or np.isnan(dernier['MA20']) or np.isnan(dernier['MA50']):
+            return f"{symbole}: Erreur d'analyse, données invalides."
 
         signal = "ATTENDRE"
         if dernier['RSI'] < 30 and dernier['MA20'] > dernier['MA50']:
