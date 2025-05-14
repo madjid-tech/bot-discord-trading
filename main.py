@@ -10,7 +10,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1159841547957837877
+CHANNEL_ID = 1372093876306841601
 
 def compute_rsi(data, window=14):
     delta = data.diff()
@@ -38,25 +38,27 @@ def analyser(symbole):
         return f"{symbole}: ERREUR ({e})"
 
 class TradingBot(discord.Client):
-  async def on_ready(self):
-    print(f'✅ Connecté en tant que {self.user}')
-    await self.wait_until_ready()
+    async def on_ready(self):
+        print(f'Connecté en tant que {self.user}')
+        self.bg_task = self.loop.create_task(self.envoi_quotidien())
 
-    canal = self.get_channel(CHANNEL_ID)
-    if canal is None:
-        print("❌ Le canal est introuvable. Vérifie que le bot est bien sur le serveur et que le CHANNEL_ID est correct.")
-        return
+    async def envoi_quotidien(self):
+        await self.wait_until_ready()
+        canal = self.get_channel(CHANNEL_ID)
+        
+        while not self.is_closed():
+            now = datetime.now()
+            heure_target = datetime.combine(now.date(), time(17, 0))
+            if now > heure_target:
+                heure_target += timedelta(days=1)
+            await asyncio.sleep((heure_target - now).total_seconds())
 
-    tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
-    messages = [analyser(ticker) for ticker in tickers]
-    await canal.send("**Analyse quotidienne du marché :**")
-    for msg in messages:
-        await canal.send(msg)
+            tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
+            messages = [analyser(ticker) for ticker in tickers]
+            await canal.send("**Analyse quotidienne du marché :**")
+            for msg in messages:
+                await canal.send(msg)
 
-    await self.close()
-
-
-intents = discord.Intents.all()
-
+intents = discord.Intents.default()
 bot = TradingBot(intents=intents)
 bot.run(TOKEN)
