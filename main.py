@@ -10,7 +10,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1372093876306841601
+CHANNEL_ID = 1159841547957837877
 
 def compute_rsi(data, window=14):
     delta = data.diff()
