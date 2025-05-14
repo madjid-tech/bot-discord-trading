@@ -3,10 +3,10 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import asyncio
+
 from dotenv import load_dotenv
 import os
 
-# Charger les variables d'environnement
 load_dotenv()  # Charge les variables du fichier .env
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -21,25 +21,12 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        # Téléchargement des données boursières sur une période de 3 mois
-        df = yf.download(symbole, period='3mo', interval='1d')
-
-        # Vérification de la validité des données
-        if df.empty or len(df) < 30:  # Minimum pour calculer RSI, MME20, MME50
-            return f"{symbole}: Pas assez de données pour l'analyse."
-
+        df = yf.download(symbole, period='1mo', interval='1d')
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
-
-        # Obtenir la dernière ligne des données
         dernier = df.iloc[-1]
 
-        # Vérifier si des valeurs sont manquantes
-        if pd.isna(dernier['RSI']) or pd.isna(dernier['MA20']) or pd.isna(dernier['MA50']):
-            return f"{symbole}: Pas assez de données pour l'analyse."
-
-        # Définir le signal d'achat ou de vente
         signal = "ATTENDRE"
         if dernier['RSI'] < 30 and dernier['MA20'] > dernier['MA50']:
             signal = "ACHETER"
@@ -55,31 +42,23 @@ class TradingBot(discord.Client):
         print(f'Connecté en tant que {self.user}')
         canal = self.get_channel(CHANNEL_ID)
 
-        # Liste des symboles à analyser
-       tickers = [
-    'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA',  # Actions en France
-    'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',     # Entreprises du CAC 40
-    'EDF.PA', 'L'Oreal.PA', 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
-    'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
-    'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
-    'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
-    # Actions internationales
-    'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
-    'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
-]
+        tickers = [
+            'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA', 
+            'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
+            'EDF.PA', 'L'Oreal.PA', 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
+            'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
+            'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
+            'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
+            'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
+            'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
+        ]
 
         messages = [analyser(ticker) for ticker in tickers]
-        
-        # Envoi du message d'analyse sur le canal
         await canal.send("**Analyse quotidienne du marché :**")
         for msg in messages:
             await canal.send(msg)
-
         await self.close()
 
-# Intents par défaut (sans privilèges)
 intents = discord.Intents.default()
 bot = TradingBot(intents=intents)
-
-# Lancer le bot Discord
 bot.run(TOKEN)
