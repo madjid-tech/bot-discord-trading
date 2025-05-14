@@ -3,15 +3,17 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import asyncio
-from datetime import datetime, time, timedelta
-
 from dotenv import load_dotenv
 import os
 
+# Chargement du token depuis le fichier .env
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1372093876306841601
 
+# ID du salon Discord (clic droit > copier l'identifiant)
+CHANNEL_ID = 1159841547957837877
+
+# Fonction pour calculer le RSI
 def compute_rsi(data, window=14):
     delta = data.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window).mean()
@@ -19,6 +21,7 @@ def compute_rsi(data, window=14):
     rs = gain / loss
     return 100 - (100 / (1 + rs))
 
+# Fonction d’analyse pour un symbole
 def analyser(symbole):
     try:
         df = yf.download(symbole, period='1mo', interval='1d')
@@ -37,28 +40,31 @@ def analyser(symbole):
     except Exception as e:
         return f"{symbole}: ERREUR ({e})"
 
+# Classe du bot Discord
 class TradingBot(discord.Client):
     async def on_ready(self):
-        print(f'Connecté en tant que {self.user}')
-        self.bg_task = self.loop.create_task(self.envoi_quotidien())
-
-    async def envoi_quotidien(self):
+        print(f'✅ Connecté en tant que {self.user}')
         await self.wait_until_ready()
+
         canal = self.get_channel(CHANNEL_ID)
-        
-        while not self.is_closed():
-            now = datetime.now()
-            heure_target = datetime.combine(now.date(), time(17, 0))
-            if now > heure_target:
-                heure_target += timedelta(days=1)
-            await asyncio.sleep((heure_target - now).total_seconds())
+        if canal is None:
+            print("❌ Le canal est introuvable. Vérifie l'ID du salon et les permissions du bot.")
+            return
 
-            tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
-            messages = [analyser(ticker) for ticker in tickers]
-            await canal.send("**Analyse quotidienne du marché :**")
-            for msg in messages:
-                await canal.send(msg)
+        tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
+        messages = [analyser(ticker) for ticker in tickers]
 
+        await canal.send("**📊 Analyse quotidienne du marché :**")
+        for msg in messages:
+            await canal.send(msg)
+
+        await self.close()
+
+# Initialisation du bot avec les intents
 intents = discord.Intents.default()
+intents.guilds = True
+intents.messages = True
 bot = TradingBot(intents=intents)
+
+# Lancement du bot
 bot.run(TOKEN)
