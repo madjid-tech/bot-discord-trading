@@ -3,14 +3,12 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import asyncio
-
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Charge les variables du fichier .env
+load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-
-CHANNEL_ID = 1159841547957837877  # ID de ton salon Discord
+CHANNEL_ID = 1159841547957837877  # Ton salon Discord
 
 def compute_rsi(data, window=14):
     delta = data.diff()
@@ -21,7 +19,10 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        df = yf.download(symbole, period='1mo', interval='1d')
+        df = yf.download(symbole, period='3mo', interval='1d', progress=False)
+        if df.empty or len(df) < 50:
+            return f"{symbole}: ERREUR (Pas assez de données)"
+
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
@@ -33,7 +34,7 @@ def analyser(symbole):
         elif dernier['RSI'] > 70 and dernier['MA20'] < dernier['MA50']:
             signal = "VENDRE"
 
-        return f"{symbole}: {signal} (RSI={dernier['RSI']:.1f}, MME20={dernier['MA20']:.2f}, MME50={dernier['MA50']:.2f})"
+        return f"{symbole}: {signal} (RSI={dernier['RSI']:.1f}, MA20={dernier['MA20']:.2f}, MA50={dernier['MA50']:.2f})"
     except Exception as e:
         return f"{symbole}: ERREUR ({e})"
 
@@ -43,20 +44,40 @@ class TradingBot(discord.Client):
         canal = self.get_channel(CHANNEL_ID)
 
         tickers = [
-            'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA', 
-            'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
-            'EDF.PA', "L'Oreal.PA", 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
-            'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
-            'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
-            'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
-            'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
-            'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
+            'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA',
+            'AC.PA', 'MC.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
+            'EDF.PA', 'OR.PA', 'STM.PA', 'DG.PA', 'BN.PA', 'BN.PA',
+            'EN.PA', 'URW.PA', 'CAP.PA', 'HO.PA', 'AXA.PA', 'GLE.PA', 'ML.PA', 
+            'WLN.PA', 'RMS.PA', 'ORA.PA', 'RI.PA', 'SW.PA', 'SAF.PA',
+            'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'META', 'SPY', 'NVDA', 
+            'BRK-B', 'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX'
         ]
 
-        messages = [analyser(ticker) for ticker in tickers]
-        await canal.send("**Analyse quotidienne du marché :**")
+        acheter, vendre, attendre = 0, 0, 0
+        messages = []
+
+        for ticker in tickers:
+            result = analyser(ticker)
+            messages.append(result)
+
+            if "ACHETER" in result:
+                acheter += 1
+            elif "VENDRE" in result:
+                vendre += 1
+            elif "ATTENDRE" in result:
+                attendre += 1
+
+        await canal.send("📈 **Analyse quotidienne du marché :**")
         for msg in messages:
             await canal.send(msg)
+
+        await canal.send(
+            f"📊 **Résumé :**\n"
+            f"✅ {acheter} actions à acheter\n"
+            f"❌ {vendre} actions à vendre\n"
+            f"🟡 {attendre} actions à garder / attendre"
+        )
+
         await self.close()
 
 intents = discord.Intents.default()
