@@ -6,14 +6,12 @@ import asyncio
 from dotenv import load_dotenv
 import os
 
-# Chargement du token depuis le fichier .env
-load_dotenv()
+# Charger les variables d'environnement
+load_dotenv()  # Charge les variables du fichier .env
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# ID du salon Discord (clic droit > copier l'identifiant)
-CHANNEL_ID = 1159841547957837877
+CHANNEL_ID = 1372093876306841601  # ID de ton salon Discord
 
-# Fonction pour calculer le RSI
 def compute_rsi(data, window=14):
     delta = data.diff()
     gain = (delta.where(delta > 0, 0)).rolling(window).mean()
@@ -21,7 +19,6 @@ def compute_rsi(data, window=14):
     rs = gain / loss
     return 100 - (100 / (1 + rs))
 
-# Fonction d’analyse pour un symbole
 def analyser(symbole):
     try:
         df = yf.download(symbole, period='1mo', interval='1d')
@@ -30,6 +27,11 @@ def analyser(symbole):
         df['MA50'] = df['Close'].rolling(50).mean()
         dernier = df.iloc[-1]
 
+        # Vérifie si l'une des valeurs est NaN (données insuffisantes)
+        if pd.isna(dernier['RSI']) or pd.isna(dernier['MA20']) or pd.isna(dernier['MA50']):
+            return f"{symbole}: Pas assez de données pour l'analyse."
+
+        # Définir le signal d'achat ou de vente
         signal = "ATTENDRE"
         if dernier['RSI'] < 30 and dernier['MA20'] > dernier['MA50']:
             signal = "ACHETER"
@@ -40,29 +42,25 @@ def analyser(symbole):
     except Exception as e:
         return f"{symbole}: ERREUR ({e})"
 
-# Classe du bot Discord
 class TradingBot(discord.Client):
     async def on_ready(self):
-        print(f'✅ Connecté en tant que {self.user}')
-        await self.wait_until_ready()
-
+        print(f'Connecté en tant que {self.user}')
         canal = self.get_channel(CHANNEL_ID)
-        if canal is None:
-            print("❌ Le canal est introuvable. Vérifie l'ID du salon et les permissions du bot.")
-            return
 
+        # Liste des symboles à analyser
         tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
         messages = [analyser(ticker) for ticker in tickers]
-
-        await canal.send("**📊 Analyse quotidienne du marché :**")
+        
+        # Envoi du message d'analyse sur le canal
+        await canal.send("**Analyse quotidienne du marché :**")
         for msg in messages:
             await canal.send(msg)
 
         await self.close()
 
-# Initialisation du bot avec les intents
+# Intents par défaut (sans privilèges)
 intents = discord.Intents.default()
 bot = TradingBot(intents=intents)
 
-# Lancement du bot
+# Lancer le bot Discord
 bot.run(TOKEN)
