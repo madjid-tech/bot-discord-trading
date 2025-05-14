@@ -3,7 +3,6 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import asyncio
-
 from dotenv import load_dotenv
 import os
 
@@ -21,24 +20,23 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        # Télécharge les données sur 3 mois, avec un intervalle de 1 jour
-        df = yf.download(symbole, period='3mo', interval='1d')
+        df = yf.download(symbole, period='3mo', interval='1d')  # 1d pour avoir des données journalières
+        if df.empty:
+            return f"{symbole}: Pas de données disponibles."
         
-        # Si les données sont insuffisantes, on renvoie une erreur
-        if df.shape[0] < 20:
-            return f"{symbole}: Pas assez de données pour une analyse fiable."
-        
-        df = df.dropna()  # Supprimer les valeurs manquantes
+        # Calcul RSI et moyennes mobiles
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
 
+        # Récupération des dernières valeurs
         dernier = df.iloc[-1]
+        
+        # Vérification des valeurs pour éviter les erreurs
+        if pd.isna(dernier['RSI']) or pd.isna(dernier['MA20']) or pd.isna(dernier['MA50']):
+            return f"{symbole}: Pas assez de données pour une analyse fiable."
 
-        # Vérifier que les valeurs sont valides avant de faire les calculs
-        if np.isnan(dernier['RSI']) or np.isnan(dernier['MA20']) or np.isnan(dernier['MA50']):
-            return f"{symbole}: Erreur d'analyse, données invalides."
-
+        # Logique de trading
         signal = "ATTENDRE"
         if dernier['RSI'] < 30 and dernier['MA20'] > dernier['MA50']:
             signal = "ACHETER"
@@ -56,26 +54,16 @@ class TradingBot(discord.Client):
 
         tickers = [
             'TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA', 
-            'AC.PA', 'MC.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
-            'OR.PA', 'FR.PA', 'BN.PA', 'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 
-            'META', 'NVDA', 'SPY', 'BRK-B', 'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA',
-            'IBM', 'NFLX'
+            'AC.PA', 'LVMH.PA', 'RNO.PA', 'DG.PA', 'KER.PA', 'GLE.PA', 'PUB.PA',
+            'EDF.PA', "L'Oreal.PA", 'STMicroelectronics.PA', 'Vinci.PA', 'Dassault.PA',
+            'Danone.PA', 'Kering.PA', 'Bouygues.PA', 'Unibail-Rodamco.PA', 'Capgemini.PA',
+            'Thales.PA', 'AXA.PA', 'SocieteGenerale.PA', 'Michelin.PA', 'Worldline.PA',
+            'Hermes.PA', 'Orange.PA', 'Pernod-Ricard.PA', 'Sodexo.PA', 'Safran.PA',
+            'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
+            'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
         ]
 
-        valid_tickers = []
-
-        # Vérification des tickers valides
-        for ticker in tickers:
-            try:
-                # Essaye de télécharger les données du ticker
-                yf.download(ticker, period='3mo', interval='1d')
-                valid_tickers.append(ticker)  # Si les données sont valides, on les ajoute à la liste
-            except Exception as e:
-                print(f"Erreur avec {ticker}: {e}")  # Affiche l'erreur et passe au ticker suivant
-
-        print(f"Tickers valides : {valid_tickers}")
-        
-        messages = [analyser(ticker) for ticker in valid_tickers]
+        messages = [analyser(ticker) for ticker in tickers]
         await canal.send("**Analyse quotidienne du marché :**")
         for msg in messages:
             await canal.send(msg)
