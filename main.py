@@ -62,11 +62,29 @@ class TradingBot(discord.Client):
             'AAPL', 'GOOGL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'SPY', 'NVDA', 'BRK-B', 
             'WMT', 'DIS', 'BA', 'GS', 'JPM', 'MA', 'IBM', 'NFLX', 'NVDA'
         ]
+        
+        achats = 0
+        ventes = 0
+        attendre = 0
+        
+        messages = []
+        for ticker in tickers:
+            result = analyser(ticker)
+            if "ACHETER" in result:
+                achats += 1
+            elif "VENDRE" in result:
+                ventes += 1
+            elif "ATTENDRE" in result:
+                attendre += 1
+            messages.append(result)
 
-        messages = [analyser(ticker) for ticker in tickers]
+        # Envoi des résultats dans le canal Discord
         await canal.send("**Analyse quotidienne du marché :**")
         for msg in messages:
             await canal.send(msg)
+
+        # Envoi du résumé des actions
+        await canal.send(f"\n📊 Résumé :\n✅ {achats} actions à acheter\n❌ {ventes} actions à vendre\n🟡 {attendre} actions à garder / attendre")
         await self.close()
 
 intents = discord.Intents.default()
