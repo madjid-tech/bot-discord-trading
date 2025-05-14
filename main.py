@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import asyncio
 
-TOKEN = "MTM3MjEwMDk3NDk4MTgxMjI3NQ.Gvcc3y.WfZqi-E0q6q7DeoXAQMx1qK1PU803m1djcsUjQ"
+TOKEN = "MTM3MjEwMDk3NDk4MTgxMjI3NQ.GBtZ2U.8m0jbeZBREBrmlIBJD1fu-2xbeSxQrAaNvRMqs"
 CHANNEL_ID = 1159841547957837877 # ID de ton salon Discord
 
 def compute_rsi(data, window=14):
