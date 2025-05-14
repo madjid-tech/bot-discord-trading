@@ -38,29 +38,23 @@ def analyser(symbole):
         return f"{symbole}: ERREUR ({e})"
 
 class TradingBot(discord.Client):
-    async def on_ready(self):
-        print(f'Connecté en tant que {self.user}')
-        self.bg_task = self.loop.create_task(self.envoi_quotidien())
+  async def on_ready(self):
+    print(f'✅ Connecté en tant que {self.user}')
+    await self.wait_until_ready()
 
-    async def envoi_quotidien(self):
-        await self.wait_until_ready()canal = self.get_channel(CHANNEL_ID)
-if canal is None:
-    print("❌ Le canal est introuvable. Vérifie que le bot est sur le bon serveur et a accès à ce canal.")
-    return
+    canal = self.get_channel(CHANNEL_ID)
+    if canal is None:
+        print("❌ Le canal est introuvable. Vérifie que le bot est bien sur le serveur et que le CHANNEL_ID est correct.")
+        return
 
-        
-        while not self.is_closed():
-            now = datetime.now()
-            heure_target = datetime.combine(now.date(), time(17, 0))
-            if now > heure_target:
-                heure_target += timedelta(days=1)
-            await asyncio.sleep((heure_target - now).total_seconds())
+    tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
+    messages = [analyser(ticker) for ticker in tickers]
+    await canal.send("**Analyse quotidienne du marché :**")
+    for msg in messages:
+        await canal.send(msg)
 
-            tickers = ['TTE.PA', 'AIR.PA', 'BNP.PA', 'ORA.PA', 'ENGI.PA', 'SAN.PA', 'VIE.PA']
-            messages = [analyser(ticker) for ticker in tickers]
-            await canal.send("**Analyse quotidienne du marché :**")
-            for msg in messages:
-                await canal.send(msg)
+    await self.close()
+
 
 intents = discord.Intents.all()
 
