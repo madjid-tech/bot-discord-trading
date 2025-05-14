@@ -10,7 +10,7 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = 1372093876306841601
+CHANNEL_ID = https://discord.com/oauth2/authorize?client_id=1372100974981812275&permissions=2048&integration_type=0&scope=bot
 
 def compute_rsi(data, window=14):
     delta = data.diff()
