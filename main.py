@@ -10,7 +10,7 @@ import os
 load_dotenv()  # Charge les variables du fichier .env
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-CHANNEL_ID = 1159841547957837877 # ID de ton salon Discord
+CHANNEL_ID = 1159841547957837877  # ID de ton salon Discord
 
 def compute_rsi(data, window=14):
     delta = data.diff()
@@ -22,12 +22,17 @@ def compute_rsi(data, window=14):
 def analyser(symbole):
     try:
         df = yf.download(symbole, period='1mo', interval='1d')
+        
+        # Vérifier si les données sont suffisantes
+        if df.empty or len(df) < 30:  # Minimum pour calculer RSI, MME20, MME50
+            return f"{symbole}: Pas assez de données pour l'analyse."
+
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
         dernier = df.iloc[-1]
 
-        # Vérifie si l'une des valeurs est NaN (données insuffisantes)
+        # Vérifier si une des colonnes contient des valeurs NaN
         if pd.isna(dernier['RSI']) or pd.isna(dernier['MA20']) or pd.isna(dernier['MA50']):
             return f"{symbole}: Pas assez de données pour l'analyse."
 
