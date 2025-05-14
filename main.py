@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import asyncio
 
-TOKEN = "1159841547957837877"
+TOKEN = "MTM3MjEwMDk3NDk4MTgxMjI3NQ.GqzC_R.CMF-mPjTjhiqmFXmDiu86PMA1QRlbPvbAIpejo"
 CHANNEL_ID = 1159841547957837875
 
 def compute_rsi(data, window=14):
