@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import asyncio
 
-TOKEN = "MTM3MjEwMDk3NDk4MTgxMjI3NQ.GBtZ2U.8m0jbeZBREBrmlIBJD1fu-2xbeSxQrAaNvRMqs"
-CHANNEL_ID = 1159841547957837877 # ID de ton salon Discord
+TOKEN = "MTM3MjEwMDk3NDk4MTgxMjI3NQ.GOV1NO.TAzKrMCqaW3QFrrHTAiGnWatWJKDyvcUekrU1Q"
+CHANNEL_ID = 1372093876306841601 # ID de ton salon Discord
 
 def compute_rsi(data, window=14):
     delta = data.diff()
