@@ -10,7 +10,7 @@ import os
 load_dotenv()  # Charge les variables du fichier .env
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-CHANNEL_ID = 1372093876306841601  # ID de ton salon Discord
+CHANNEL_ID = 1159841547957837877  # ID de ton salon Discord
 
 def compute_rsi(data, window=14):
     delta = data.diff()
