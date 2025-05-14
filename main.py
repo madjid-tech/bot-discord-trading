@@ -60,5 +60,8 @@ class TradingBot(discord.Client):
                 await canal.send(msg)
 
 intents = discord.Intents.default()
+intents.guilds = True
+intents.messages = True
+
 bot = TradingBot(intents=intents)
 bot.run(TOKEN)
