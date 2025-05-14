@@ -21,18 +21,21 @@ def compute_rsi(data, window=14):
 
 def analyser(symbole):
     try:
-        df = yf.download(symbole, period='1mo', interval='1d')
-        
-        # Vérifier si les données sont suffisantes
+        # Téléchargement des données boursières sur une période de 3 mois
+        df = yf.download(symbole, period='3mo', interval='1d')
+
+        # Vérification de la validité des données
         if df.empty or len(df) < 30:  # Minimum pour calculer RSI, MME20, MME50
             return f"{symbole}: Pas assez de données pour l'analyse."
 
         df['RSI'] = compute_rsi(df['Close'])
         df['MA20'] = df['Close'].rolling(20).mean()
         df['MA50'] = df['Close'].rolling(50).mean()
+
+        # Obtenir la dernière ligne des données
         dernier = df.iloc[-1]
 
-        # Vérifier si une des colonnes contient des valeurs NaN
+        # Vérifier si des valeurs sont manquantes
         if pd.isna(dernier['RSI']) or pd.isna(dernier['MA20']) or pd.isna(dernier['MA50']):
             return f"{symbole}: Pas assez de données pour l'analyse."
 
